@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum DriverStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum VehicleType {
+  MOTO
+  VAN
+  TRUCK_2
+  TRUCK_3
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  ON_ROUTE
+  MAINTENANCE
+  RETIRED
+}
+
+enum LocationType {
+  OWN_WAREHOUSE
+  CLIENT_WAREHOUSE
+  STORE
+  ADDRESS
+}
+
+enum TripStatus {
+  PROG
+  TRANS
+  ENTG
+  NOV
+  CANC
+}
+
+enum ErpDocType {
+  REQ
+  TRB
+  PED
+  FET
+  OCN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+}
+
+enum CreditNoteStatus {
+  PENDING
+  REVIEWING
+  APPROVED
+  REJECTED
+}
+
+enum UserRole {
+  COORDINATOR
+  DRIVER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole
+  driverId     String?  @map("driver_id")
+  driver       Driver?  @relation(fields: [driverId], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Driver {
+  id              String       @id @default(uuid())
+  driverId        String       @unique @map("driver_id")
+  name            String
+  cedula          String       @unique
+  birthDate       DateTime?    @map("birth_date")
+  licenseCategory String       @map("license_category")
+  licenseExpiry   DateTime     @map("license_expiry")
+  status          DriverStatus @default(ACTIVE)
+  vehicleId       String?      @map("vehicle_id")
+  vehicle         Vehicle?     @relation(fields: [vehicleId], references: [id])
+  trips           Trip[]
+  users           User[]
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@map("drivers")
+}
+
+model Vehicle {
+  id          String        @id @default(uuid())
+  plate       String        @unique
+  type        VehicleType
+  brand       String
+  model       String
+  year        Int
+  capacityKg  Float         @map("capacity_kg")
+  capacityM3  Float?        @map("capacity_m3")
+  soatExpiry  DateTime      @map("soat_expiry")
+  status      VehicleStatus @default(AVAILABLE)
+  drivers     Driver[]
+  trips       Trip[]
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("vehicles")
+}
+
+model Location {
+  id           String       @id @default(uuid())
+  locationId   String       @unique @map("location_id")
+  name         String
+  type         LocationType
+  city         String
+  department   String?
+  address      String
+  schedule     String?
+  contactName  String?      @map("contact_name")
+  contactPhone String?      @map("contact_phone")
+  lat          Float?
+  lng          Float?
+  notes        String?
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  originTrips      Trip[]        @relation("TripOrigin")
+  destinationTrips Trip[]        @relation("TripDestination")
+  appointments     Appointment[]
+
+  @@map("locations")
+}
+
+model Trip {
+  id            String     @id @default(uuid())
+  tripId        String     @unique @map("trip_id")
+  driverId      String     @map("driver_id")
+  driver        Driver     @relation(fields: [driverId], references: [id])
+  vehicleId     String     @map("vehicle_id")
+  vehicle       Vehicle    @relation(fields: [vehicleId], references: [id])
+  originId      String     @map("origin_id")
+  origin        Location   @relation("TripOrigin", fields: [originId], references: [id])
+  destinationId String     @map("destination_id")
+  destination   Location   @relation("TripDestination", fields: [destinationId], references: [id])
+  erpDocType    ErpDocType @map("erp_doc_type")
+  erpDocNumber  String     @map("erp_doc_number")
+  scheduledAt   DateTime   @map("scheduled_at")
+  status        TripStatus @default(PROG)
+  statusHistory Json       @default("[]") @map("status_history")
+  observations  String?
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  checklist    ChecklistItem[]
+  appointments Appointment[]
+  creditNotes  CreditNote[]
+
+  @@map("trips")
+}
+
+model ChecklistItem {
+  id           String   @id @default(uuid())
+  tripId       String   @map("trip_id")
+  trip         Trip     @relation(fields: [tripId], references: [id])
+  item         String
+  category     String
+  responseType String   @map("response_type")
+  value        String?
+  blocksExit   Boolean  @default(false) @map("blocks_exit")
+  isBlocked    Boolean  @default(false) @map("is_blocked")
+  photoUrl     String?  @map("photo_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("checklist_items")
+}
+
+model Appointment {
+  id            String            @id @default(uuid())
+  appointmentId String            @unique @map("appointment_id")
+  tripId        String            @map("trip_id")
+  trip          Trip              @relation(fields: [tripId], references: [id])
+  locationId    String            @map("location_id")
+  location      Location          @relation(fields: [locationId], references: [id])
+  scheduledAt   DateTime          @map("scheduled_at")
+  duration      Int
+  status        AppointmentStatus @default(PENDING)
+  confirmedBy   String?           @map("confirmed_by")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  @@map("appointments")
+}
+
+model CreditNote {
+  id          String           @id @default(uuid())
+  ncId        String           @unique @map("nc_id")
+  tripId      String           @map("trip_id")
+  trip        Trip             @relation(fields: [tripId], references: [id])
+  reason      String
+  amount      Float
+  status      CreditNoteStatus @default(PENDING)
+  requestedBy String           @map("requested_by")
+  photoUrl    String?          @map("photo_url")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@map("credit_notes")
+}
