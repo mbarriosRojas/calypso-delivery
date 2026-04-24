@@ -1,4 +1,4 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://calypso-api.vercel.app'
 
 function getToken() {
   if (typeof window === 'undefined') return null
