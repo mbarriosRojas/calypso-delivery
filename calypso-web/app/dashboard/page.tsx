@@ -6,6 +6,7 @@ import { TripStatusBadge } from '@/components/TripStatusBadge'
 import { TripMap } from '@/components/TripMap'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Layout } from '@/components/Layout'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -20,6 +21,68 @@ interface Trip {
 interface Location {
   locationId: string; name: string; city: string; lat: number | null; lng: number | null
 }
+
+// ── Metric card ────────────────────────────────────────────────────────────
+
+interface MetricCardProps {
+  label: string
+  count: number
+  colorClass: string
+  borderClass: string
+  icon: React.ReactNode
+}
+
+function MetricCard({ label, count, colorClass, borderClass, icon }: MetricCardProps) {
+  return (
+    <div className={`bg-white rounded-xl border-l-4 ${borderClass} shadow-sm p-5 flex items-center gap-4`}>
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClass} bg-opacity-10`}
+           style={{ backgroundColor: 'currentColor' }}>
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0`}
+             style={{ backgroundColor: 'inherit' }}>
+        </div>
+      </div>
+      <div className="flex items-center gap-4 w-full">
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 opacity-90`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</p>
+          <p className={`metric-number ${colorClass}`}>{count}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Simpler metric card ────────────────────────────────────────────────────
+
+interface SimpleMetricProps {
+  label: string
+  count: number
+  accentBg: string
+  accentText: string
+  iconPath: string
+}
+
+function SimpleMetric({ label, count, accentBg, accentText, iconPath }: SimpleMetricProps) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide leading-none">{label}</p>
+          <p className={`mt-2 text-4xl font-bold tracking-tight leading-none ${accentText}`}>{count}</p>
+        </div>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${accentBg}`}>
+          <svg className={`w-5 h-5 ${accentText}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+            <path d={iconPath} />
+          </svg>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Page ───────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -41,101 +104,172 @@ export default function DashboardPage() {
     }).finally(() => setLoading(false))
   }, [router])
 
+  // Kept for compatibility — not used in JSX but preserves the import
+  void logout
+
   const counts = {
-    PROG: trips.filter(t => t.status === 'PROG').length,
+    PROG:  trips.filter(t => t.status === 'PROG').length,
     TRANS: trips.filter(t => t.status === 'TRANS').length,
-    NOV: trips.filter(t => t.status === 'NOV').length,
-    ENTG: trips.filter(t => t.status === 'ENTG').length,
+    NOV:   trips.filter(t => t.status === 'NOV').length,
+    ENTG:  trips.filter(t => t.status === 'ENTG').length,
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Cargando...</p></div>
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-3 text-slate-400">
+            <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <span className="text-sm">Cargando operaciones...</span>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  const metrics = [
+    {
+      label: 'Programados',
+      count: counts.PROG,
+      accentBg: 'bg-slate-100',
+      accentText: 'text-slate-700',
+      iconPath: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+    },
+    {
+      label: 'En tránsito',
+      count: counts.TRANS,
+      accentBg: 'bg-amber-50',
+      accentText: 'text-amber-600',
+      iconPath: 'M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v7a1 1 0 001 1h4m6 0h2m0 0a2 2 0 104 0m-4 0a2 2 0 114 0M9 16a2 2 0 100 4 2 2 0 000-4z',
+    },
+    {
+      label: 'Novedades',
+      count: counts.NOV,
+      accentBg: 'bg-red-50',
+      accentText: 'text-red-600',
+      iconPath: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+    },
+    {
+      label: 'Entregados',
+      count: counts.ENTG,
+      accentBg: 'bg-emerald-50',
+      accentText: 'text-emerald-600',
+      iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+    },
+  ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-blue-700">🚚 Calypso Delivery</h1>
-        <nav className="flex gap-4 text-sm">
-          <Link href="/dashboard" className="font-medium text-blue-700">Dashboard</Link>
-          <Link href="/trips" className="text-gray-600 hover:text-blue-700">Viajes</Link>
-          <Link href="/drivers" className="text-gray-600 hover:text-blue-700">Conductores</Link>
-          <Link href="/vehicles" className="text-gray-600 hover:text-blue-700">Vehículos</Link>
-          <button onClick={logout} className="text-gray-400 hover:text-red-600">Salir</button>
-        </nav>
-      </header>
+    <Layout>
+      <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-7">
 
-      <main className="p-6 max-w-7xl mx-auto space-y-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Panel de operación</h2>
+        {/* Page header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Panel de operación</h2>
+            <p className="text-sm text-slate-500 mt-0.5">
+              {new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
+          <Link href="/trips/new">
+            <Button
+              className="text-sm font-semibold h-9 px-4 shadow-sm"
+              style={{ backgroundColor: 'var(--calypso-orange)', color: 'white' }}
+            >
+              + Nuevo viaje
+            </Button>
+          </Link>
+        </div>
 
-        {/* Métricas */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: 'Programados', count: counts.PROG, color: 'text-gray-700', bg: 'bg-gray-50' },
-            { label: 'En tránsito', count: counts.TRANS, color: 'text-blue-700', bg: 'bg-blue-50' },
-            { label: 'Novedades', count: counts.NOV, color: 'text-yellow-700', bg: 'bg-yellow-50' },
-            { label: 'Entregados hoy', count: counts.ENTG, color: 'text-green-700', bg: 'bg-green-50' },
-          ].map(({ label, count, color, bg }) => (
-            <Card key={label} className={`${bg} border-0`}>
-              <CardContent className="pt-5 pb-4">
-                <p className="text-sm text-gray-500">{label}</p>
-                <p className={`text-3xl font-bold ${color}`}>{count}</p>
-              </CardContent>
-            </Card>
+        {/* Metrics grid */}
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          {metrics.map((m) => (
+            <SimpleMetric key={m.label} {...m} />
           ))}
         </div>
 
-        {/* Mapa */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-gray-700">Mapa de operaciones</CardTitle>
-            <p className="text-xs text-gray-400">🔴 Origen &nbsp;🟢 Destino &nbsp;🔵 Viaje activo</p>
-          </CardHeader>
-          <CardContent>
-            <TripMap locations={locations} trips={trips} />
-          </CardContent>
-        </Card>
-
-        {/* Tabla de viajes recientes */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-semibold text-gray-700">Viajes recientes</CardTitle>
-            <Link href="/trips">
-              <Button size="sm" className="bg-blue-700 hover:bg-blue-800 text-xs">+ Nuevo viaje</Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-gray-500 text-xs uppercase">
-                    <th className="text-left py-2 pr-4">ID</th>
-                    <th className="text-left py-2 pr-4">Conductor</th>
-                    <th className="text-left py-2 pr-4">Ruta</th>
-                    <th className="text-left py-2 pr-4">Estado</th>
-                    <th className="text-left py-2">Fecha</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {trips.slice(0, 8).map((trip) => (
-                    <tr key={trip.id} className="border-b hover:bg-gray-50">
-                      <td className="py-2 pr-4 font-mono text-xs text-blue-600">
-                        <Link href={`/trips/${trip.id}`}>{trip.tripId}</Link>
-                      </td>
-                      <td className="py-2 pr-4">{trip.driver?.name ?? '—'}</td>
-                      <td className="py-2 pr-4 text-xs text-gray-600">
-                        {trip.origin.city} → {trip.destination.city}
-                      </td>
-                      <td className="py-2 pr-4"><TripStatusBadge status={trip.status} /></td>
-                      <td className="py-2 text-xs text-gray-500">
-                        {new Date(trip.scheduledAt).toLocaleDateString('es-CO')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* Map */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-800">Mapa de operaciones</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Visualización en tiempo real de rutas activas</p>
             </div>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+            <div className="flex items-center gap-4 text-xs text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span>Origen
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>Destino
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>Activo
+              </span>
+            </div>
+          </div>
+          <div className="p-4">
+            <TripMap locations={locations} trips={trips} />
+          </div>
+        </div>
+
+        {/* Recent trips table */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-800">Viajes recientes</h3>
+            <Link href="/trips">
+              <span className="text-xs font-medium text-[var(--calypso-orange)] hover:underline cursor-pointer">
+                Ver todos →
+              </span>
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  {['ID Viaje', 'Conductor', 'Ruta', 'Estado', 'Fecha'].map((h) => (
+                    <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {trips.slice(0, 8).map((trip) => (
+                  <tr key={trip.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-5 py-3.5">
+                      <Link href={`/trips/${trip.id}`}>
+                        <span className="font-mono text-xs font-medium text-[var(--calypso-orange)] hover:underline cursor-pointer">
+                          {trip.tripId}
+                        </span>
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="text-sm text-slate-700 font-medium">{trip.driver?.name ?? '—'}</span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="text-xs text-slate-500">{trip.origin.city}</span>
+                      <span className="text-xs text-slate-400 mx-1.5">→</span>
+                      <span className="text-xs text-slate-500">{trip.destination.city}</span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <TripStatusBadge status={trip.status} />
+                    </td>
+                    <td className="px-5 py-3.5 text-xs text-slate-400 whitespace-nowrap">
+                      {new Date(trip.scheduledAt).toLocaleDateString('es-CO')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {trips.length === 0 && (
+              <div className="py-12 text-center text-slate-400 text-sm">No hay viajes registrados</div>
+            )}
+          </div>
+        </div>
+
+      </div>
+    </Layout>
   )
 }
