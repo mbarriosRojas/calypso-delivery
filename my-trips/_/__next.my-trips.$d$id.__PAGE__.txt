@@ -1,0 +1,6 @@
+1:"$Sreact.fragment"
+2:I[37697,["/calypso-delivery/_next/static/chunks/01xlw8hd842-c.js","/calypso-delivery/_next/static/chunks/0d3shmwh5_nmn.js","/calypso-delivery/_next/static/chunks/0sesbx5ksy8sb.js","/calypso-delivery/_next/static/chunks/0amkfoiy1kaef.js"],"default"]
+3:I[97367,["/calypso-delivery/_next/static/chunks/01xlw8hd842-c.js","/calypso-delivery/_next/static/chunks/0d3shmwh5_nmn.js"],"OutletBoundary"]
+4:"$Sreact.suspense"
+0:{"rsc":["$","$1","c",{"children":[["$","$L2",null,{}],[["$","script","script-0",{"src":"/calypso-delivery/_next/static/chunks/0sesbx5ksy8sb.js","async":true}],["$","script","script-1",{"src":"/calypso-delivery/_next/static/chunks/0amkfoiy1kaef.js","async":true}]],["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"6A1Y7S4QTdAZuOST2mbcX"}
+5:null

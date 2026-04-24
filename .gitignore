@@ -1,0 +1,5 @@
+node_modules/
+calypso-api/
+calypso-web/
+.env
+*.log
