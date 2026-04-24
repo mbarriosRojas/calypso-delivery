@@ -54,7 +54,7 @@ export function buildApp() {
   fastify.register(appointmentRoutes, { prefix: '/api/appointments' })
   fastify.register(locationRoutes, { prefix: '/api/locations' })
 
-  fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }))
+  fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString(), db: !!process.env.DATABASE_URL }))
 
   return fastify
 }

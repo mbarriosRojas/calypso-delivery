@@ -65,6 +65,9 @@ export default function DriversPage() {
                     </p>
                     <p>Vehículo: {d.vehicle ? `${d.vehicle.plate} (${d.vehicle.type})` : 'Sin asignar'}</p>
                   </div>
+                  <div className="pt-1">
+                    <Link href={`/drivers/${d.id}`} className="text-xs text-blue-600 hover:underline">Ver perfil →</Link>
+                  </div>
                 </CardContent>
               </Card>
             )
