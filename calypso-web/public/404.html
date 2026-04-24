@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+  var l = window.location;
+  l.replace(l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+    '/calypso-delivery/?p=' + encodeURIComponent(l.pathname.replace('/calypso-delivery', '') + l.search) +
+    (l.hash || ''));
+</script>
+</head>
+</html>
