@@ -9,6 +9,29 @@ import { Layout } from '@/components/Layout'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+const STATUS_LABELS: Record<string, string> = {
+  PROG: 'Programado', TRANS: 'En tránsito', NOV: 'Novedad', ENTG: 'Entregado', CANC: 'Cancelado',
+}
+
+function exportCSV(trips: Trip[]) {
+  const rows = [
+    ['ID Viaje', 'Estado', 'Conductor', 'Vehículo', 'Origen', 'Destino', 'Doc ERP', 'Fecha salida'],
+    ...trips.map((t) => [
+      t.tripId, STATUS_LABELS[t.status] ?? t.status,
+      t.driver?.name ?? '', t.vehicle?.plate ?? '',
+      t.origin.city, t.destination.city,
+      t.erpDocNumber,
+      new Date(t.scheduledAt).toLocaleString('es-CO'),
+    ]),
+  ]
+  const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = `viajes-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click(); URL.revokeObjectURL(url)
+}
+
 interface Trip {
   id: string; tripId: string; status: string; scheduledAt: string; erpDocNumber: string
   driver: { driverId: string; name: string }
@@ -89,14 +112,24 @@ export default function TripsPage() {
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Viajes</h2>
             <p className="text-sm text-slate-500 mt-0.5">{trips.length} {trips.length === 1 ? 'registro' : 'registros'} encontrados</p>
           </div>
-          <Link href="/trips/new">
+          <div className="flex items-center gap-2">
             <Button
-              className="text-sm font-semibold h-9 px-4 shadow-sm"
-              style={{ backgroundColor: 'var(--calypso-orange)', color: 'white' }}
+              variant="outline"
+              className="h-9 px-4 text-sm font-medium border-slate-200 text-slate-600 hover:text-slate-900"
+              onClick={() => exportCSV(trips)}
+              disabled={trips.length === 0}
             >
-              + Nuevo viaje
+              ↓ Exportar CSV
             </Button>
-          </Link>
+            <Link href="/trips/new">
+              <Button
+                className="text-sm font-semibold h-9 px-4 shadow-sm"
+                style={{ backgroundColor: 'var(--calypso-orange)', color: 'white' }}
+              >
+                + Nuevo viaje
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Filter row — pills on desktop, Select on mobile */}

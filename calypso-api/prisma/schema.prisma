@@ -158,10 +158,11 @@ model Trip {
   destination   Location   @relation("TripDestination", fields: [destinationId], references: [id])
   erpDocType    ErpDocType @map("erp_doc_type")
   erpDocNumber  String     @map("erp_doc_number")
-  scheduledAt   DateTime   @map("scheduled_at")
-  status        TripStatus @default(PROG)
-  statusHistory Json       @default("[]") @map("status_history")
-  observations  String?
+  scheduledAt      DateTime   @map("scheduled_at")
+  merchandiseType  String?    @map("merchandise_type")
+  status           TripStatus @default(PROG)
+  statusHistory    Json       @default("[]") @map("status_history")
+  observations     String?
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 

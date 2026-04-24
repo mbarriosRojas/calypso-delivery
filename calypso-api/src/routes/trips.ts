@@ -79,6 +79,7 @@ export async function tripRoutes(fastify: FastifyInstance) {
       erpDocType: string
       erpDocNumber: string
       scheduledAt: string
+      merchandiseType?: string
     }
 
     const tripId = generateTripId()
@@ -93,6 +94,7 @@ export async function tripRoutes(fastify: FastifyInstance) {
         erpDocType: body.erpDocType as never,
         erpDocNumber: body.erpDocNumber,
         scheduledAt: new Date(body.scheduledAt),
+        merchandiseType: body.merchandiseType ?? null,
         statusHistory: JSON.stringify([
           { status: 'PROG', timestamp: new Date().toISOString(), observations: 'Viaje creado' },
         ]),

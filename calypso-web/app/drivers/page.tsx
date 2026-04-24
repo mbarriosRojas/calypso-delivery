@@ -150,8 +150,17 @@ export default function DriversPage() {
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Conductores</h2>
             <p className="text-sm text-slate-500 mt-0.5">{drivers.length} conductores en total</p>
           </div>
-          {/* Summary pills */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link href="/drivers/new">
+              <button className="h-9 px-4 rounded-lg text-sm font-semibold text-white shadow-sm" style={{ backgroundColor: 'var(--calypso-orange)' }}>
+                + Nuevo conductor
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Summary pills */}
+        <div className="flex items-center gap-2 flex-wrap">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               {activeCount} activos
@@ -165,7 +174,6 @@ export default function DriversPage() {
               </span>
             )}
           </div>
-        </div>
 
         {/* Grid */}
         {loading ? (
